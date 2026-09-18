@@ -4,6 +4,7 @@ import { createElement } from 'react';
 import App from './App';
 import BatchApplyModal from './components/BatchApplyModal';
 import StaticHostsModal from './components/StaticHostsModal';
+import AddrConflictModal from './components/AddrConflictModal';
 import { Allocation, Plan } from './lib/model';
 
 describe('App 冒烟测试', () => {
@@ -15,6 +16,7 @@ describe('App 冒烟测试', () => {
     expect(html).toContain('新建分配');
     expect(html).toContain('批量申请');
     expect(html).toContain('前缀策略校验');
+    expect(html).toContain('地址观测冲突审计');
     expect(html).toContain('加密导出');
     expect(html).toContain('加密导入');
   });
@@ -38,6 +40,23 @@ describe('StaticHostsModal 冒烟测试', () => {
     // 初始无有效行：复制与下载均禁用
     expect(html).toMatch(/disabled[^>]*>\s*复制 hosts 文本/);
     expect(html).toMatch(/disabled[^>]*>\s*下载 hosts 文件/);
+  });
+});
+
+describe('AddrConflictModal 冒烟测试', () => {
+  const plan: Plan = {
+    version: 1,
+    roots: [{ id: 'r1', name: '办公网', cidr: '192.168.0.0/16' }],
+    allocations: [
+      { id: 'a1', name: '办公有线', kind: 'subnet', prefix: 24, cidr: '192.168.0.0/24' },
+    ],
+  };
+
+  it('弹窗渲染说明与初始空状态', () => {
+    const html = renderToString(createElement(AddrConflictModal, { plan, onClose: () => undefined }));
+    expect(html).toContain('地址观测冲突审计');
+    expect(html).toContain('ISO 时间, IPv4, MAC, 有效秒数');
+    expect(html).toContain('执行审计');
   });
 });
 

@@ -14,6 +14,7 @@ interface Props {
   onLoadDemo: () => void;
   onReset: () => void;
   onPrefixPolicy: () => void;
+  onAddrConflict: () => void;
 }
 
 export default function Toolbar(props: Props) {
@@ -51,6 +52,9 @@ export default function Toolbar(props: Props) {
         <span className="divider" />
         <button className="btn" onClick={props.onPrefixPolicy} title="对当前所有子网分配有序执行 prefix-list（不修改规划）">
           前缀策略校验
+        </button>
+        <button className="btn" onClick={props.onAddrConflict} title="粘贴地址观测，按 IP 审计不同 MAC 的半开区间重叠（只读，不修改规划）">
+          地址观测冲突审计
         </button>
         <span className="divider" />
         <button className="btn" onClick={props.onExport}>

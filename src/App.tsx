@@ -33,6 +33,7 @@ import AllocationsPanel from './components/AllocationsPanel';
 import NewAllocationForm from './components/NewAllocationForm';
 import MigrationModal from './components/MigrationModal';
 import PrefixPolicyModal from './components/PrefixPolicyModal';
+import AddrConflictModal from './components/AddrConflictModal';
 import ConflictModal from './components/ConflictModal';
 import CryptoBackupModal from './components/CryptoBackupModal';
 import BatchApplyModal from './components/BatchApplyModal';
@@ -78,6 +79,7 @@ export default function App() {
   const [migration, setMigration] = useState<MigrationRequest | null>(null);
   const [resizeTarget, setResizeTarget] = useState<Allocation | null>(null);
   const [prefixPolicyOpen, setPrefixPolicyOpen] = useState(false);
+  const [addrConflictOpen, setAddrConflictOpen] = useState(false);
   const [backupExportOpen, setBackupExportOpen] = useState(false);
   const [backupImport, setBackupImport] = useState<{ name: string; text: string } | null>(null);
   const [batchOpen, setBatchOpen] = useState(false);
@@ -501,6 +503,7 @@ export default function App() {
         onLoadDemo={loadDemo}
         onReset={resetPlan}
         onPrefixPolicy={() => setPrefixPolicyOpen(true)}
+        onAddrConflict={() => setAddrConflictOpen(true)}
       />
 
       {toast && (
@@ -590,6 +593,10 @@ export default function App() {
           allocations={plan.allocations}
           onClose={() => setPrefixPolicyOpen(false)}
         />
+      )}
+
+      {addrConflictOpen && (
+        <AddrConflictModal plan={plan} onClose={() => setAddrConflictOpen(false)} />
       )}
 
       {backupExportOpen && (

@@ -446,6 +446,18 @@ code,
   color: var(--muted);
 }
 
+.badge.conflict-mac {
+  background: rgba(229, 96, 94, 0.18);
+  color: var(--red);
+  margin: 0 4px 2px 0;
+  display: inline-block;
+  font-family: var(--mono);
+}
+
+tr.conflict-row td {
+  background: rgba(229, 96, 94, 0.06);
+}
+
 /* ---- 表格 ---- */
 .table-wrap {
   overflow-x: auto;

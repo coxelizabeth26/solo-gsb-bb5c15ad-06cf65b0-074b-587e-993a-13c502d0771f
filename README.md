@@ -26,7 +26,7 @@ npm run dev
 ### 其他命令
 
 ```bash
-npm test            # 运行规划引擎与协同同步单元测试（vitest，163 项）
+npm test            # 运行规划引擎与协同同步单元测试（vitest，182 项）
 npm run build       # 类型检查 + 生产构建（输出 dist/）
 npm run preview     # 预览生产构建（http://localhost:4173）
 ```
@@ -106,6 +106,21 @@ npm run preview     # 预览生产构建（http://localhost:4173）
   ```
 
 
+### 地址观测冲突审计
+- 工具栏「**地址观测冲突审计**」入口打开弹窗，粘贴多行观测，每行 4 个字段（逗号分隔，允许字段前后空白，空行跳过）：
+
+  ```
+  ISO 时间, IPv4, MAC, 有效秒数
+  ```
+
+  - **ISO 时间**：`YYYY-MM-DDTHH:mm:ss`，日期与时间之间允许空格，可选小数秒与 `Z` / `±HH:mm` 时区（不带时区按浏览器本地时间解释）；对日历做真实校验（拒绝 `2026-02-29`、`24:00:00` 等）；
+  - **IPv4**：点分十进制合法地址；**MAC** 支持 `aa:bb:cc:dd:ee:ff`、`aa-bb-cc-dd-ee-ff`、`aabb.ccdd.eeff` 与无分隔 12 位十六进制，统一规范化为小写冒号形式；**有效秒数**为不小于 1 的整数；
+- **先完整校验并规范化地址，再进行任何区间运算**：任一行非法（字段数不对、时间/IP/MAC/秒数非法）都**带物理行号**逐条列出并**阻止生成结果**；
+- 每行视为一个**半开有效区间 `[start, start+秒数)`**；按 IP 分组，用扫描线维护同一时刻有效的 MAC 多重集，仅当存在 **≥2 个不同 MAC** 时记为冲突；同一时刻先处理结束事件再处理开始事件，因此**仅端点相接或完全分离的历史换机不会误报**（同一 MAC 的重复观测同样不构成冲突）；
+- 参与方集合相同且端点相接的相邻冲突段自动**合并为一段**；参与方集合变化（某 MAC 提前到期/新加入）时分段；
+- 结果按 IPv4 数值升序表格列出**冲突起止（UTC ISO，起端含、止端不含）、参与 MAC 列表及该 IP 当前所属的子网分配**（取最长前缀匹配，命名保留段同样参与；未分配时标注所在根网段或越界），并可**一键复制文本报告**；
+- 该操作为纯本地只读计算，**不修改规划、不产生修订与历史记录**（多标签页冲突锁定期间仍可用）。
+
 ### 迁移预演
 调整根网段（编辑/删除）或分配容量时，系统先进行**迁移预演**：
 
@@ -164,6 +179,7 @@ npm run preview     # 预览生产构建（http://localhost:4173）
 │   │   ├── reverseDns.ts   # 反向 DNS：in-addr.arpa 区拆分、RFC 2317 委派、BIND 片段生成
 │   │   ├── staticHosts.ts  # 静态主机编排：指定地址预留 + auto 最低可用安置、hosts 文本生成
 │   │   ├── prefixPolicy.ts # 前缀策略：prefix-list 规则解析、有序命中判定、文本报告
+│   │   ├── addrConflict.ts # 地址观测冲突审计：ISO/MAC/IPv4 校验规范化、半开区间扫描线、同参与方集合合并、子网归属
 │   │   ├── model.ts        # 数据模型、校验、JSON 导入导出
 │   │   ├── planner.ts      # 最低可用地址分配、批量申请预演、迁移预演、地址空间树
 │   │   ├── revisionStore.ts # 修订图：localStorage 持久化、BroadcastChannel 同步、分叉/合并判定
@@ -173,11 +189,12 @@ npm run preview     # 预览生产构建（http://localhost:4173）
 │   │   ├── reverseDns.test.ts
 │   │   ├── staticHosts.test.ts
 │   │   ├── prefixPolicy.test.ts
+│   │   ├── addrConflict.test.ts
 │   │   ├── planner.test.ts
 │   │   ├── batchPlanner.test.ts
 │   │   ├── revisionStore.test.ts
 │   │   └── cryptoBackup.test.ts
-│   ├── components/         # 工具栏、根网段、树视图、分配清单、批量申请/迁移预演/DHCP 池/反向 DNS/静态主机/前缀策略/加密备份弹窗等
+│   ├── components/         # 工具栏、根网段、树视图、分配清单、批量申请/迁移预演/DHCP 池/反向 DNS/静态主机/前缀策略/地址观测冲突审计/加密备份弹窗等
 │   ├── App.tsx             # 状态与历史栈（撤销/重做）、迁移流程编排
 │   └── main.tsx
 └── package.json
